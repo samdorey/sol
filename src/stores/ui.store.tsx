@@ -60,6 +60,8 @@ export enum ItemType {
 	TEMPORARY_RESULT = "TEMPORARY_RESULT",
 	BOOKMARK = "BOOKMARK",
 	PREFERENCE_PANE = "PREFERENCE_PANE",
+	FIREFOX_TAB = "FIREFOX_TAB",
+	FIREFOX_HISTORY = "FIREFOX_HISTORY",
 }
 
 export enum ScratchPadColor {
@@ -232,6 +234,7 @@ export const createUIStore = (root: IRootStore) => {
 				store.hasDismissedGettingStarted =
 					parsedStore.hasDismissedGettingStarted ?? false;
 				store.hyperKeyEnabled = parsedStore.hyperKeyEnabled ?? false;
+				store.firefoxEnabled = parsedStore.firefoxEnabled ?? true;
 				store.disabledItemIds = parsedStore.disabledItemIds ?? [];
 			});
 
@@ -318,6 +321,7 @@ export const createUIStore = (root: IRootStore) => {
 		confirmCallback: null as (() => any) | null,
 		confirmTitle: null as string | null,
 		hyperKeyEnabled: false,
+		firefoxEnabled: true,
 		//    _____                            _           _
 		//   / ____|                          | |         | |
 		//  | |     ___  _ __ ___  _ __  _   _| |_ ___  __| |
@@ -357,6 +361,8 @@ export const createUIStore = (root: IRootStore) => {
 				...store.customItems,
 				...root.scripts.scripts,
 				...(store.showInAppBrowserBookMarks ? store.bookmarks : []),
+				...(store.firefoxEnabled && root.firefox ? root.firefox.tabItems : []),
+				...(store.firefoxEnabled && root.firefox ? root.firefox.historyItems : []),
 			];
 
 			// If the query is empty, return all items
@@ -596,6 +602,11 @@ export const createUIStore = (root: IRootStore) => {
 					if (info.ip) {
 						store.temporaryResult = info.ip;
 					}
+				}
+
+				// Request Firefox history search when query is long enough
+				if (store.firefoxEnabled && root.firefox && store.query.length >= 2) {
+					root.firefox.requestHistory(store.query);
 				}
 			}
 		},
@@ -993,6 +1004,10 @@ export const createUIStore = (root: IRootStore) => {
 
 		setShowInAppBrowserBookmarks: (v: boolean) => {
 			store.showInAppBrowserBookMarks = v;
+		},
+
+		setFirefoxEnabled: (v: boolean) => {
+			store.firefoxEnabled = v;
 		},
 
 		// Old custom items are not migrated to the new format which has an id

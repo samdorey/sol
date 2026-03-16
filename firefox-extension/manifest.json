@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+  "name": "Sol Firefox Bridge",
+  "version": "1.0.0",
+  "description": "Bridges Firefox tabs and history to the Sol macOS launcher",
+  "permissions": [
+    "tabs",
+    "history",
+    "nativeMessaging"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "sol-firefox-bridge@sol.app",
+      "strict_min_version": "91.0"
+    }
+  }
+}

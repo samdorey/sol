@@ -6,6 +6,7 @@ import { createUIStore, UIStore } from './stores/ui.store'
 import { ProcessesStore, createProcessesStore } from 'stores/processes.store'
 import { EmojiStore, createEmojiStore } from 'stores/emoji.store'
 import { ScriptsStore, createScriptsStore } from 'stores/scripts.store'
+import { FirefoxStore, createFirefoxStore } from 'stores/firefox.store'
 
 export interface IRootStore {
   ui: UIStore
@@ -15,6 +16,7 @@ export interface IRootStore {
   processes: ProcessesStore
   emoji: EmojiStore
   scripts: ScriptsStore
+  firefox: FirefoxStore
   cleanUp: () => void
 }
 
@@ -28,11 +30,13 @@ let createRootStore = (): IRootStore => {
   store.processes = createProcessesStore(store)
   store.scripts = createScriptsStore(store)
   store.emoji = createEmojiStore(store)
+  store.firefox = createFirefoxStore(store)
     ; (store as IRootStore).cleanUp = () => {
       store.ui.cleanUp()
       store.calendar.cleanUp()
       store.keystroke.cleanUp()
       store.clipboard.cleanUp()
+      store.firefox.cleanUp()
     }
 
   return store

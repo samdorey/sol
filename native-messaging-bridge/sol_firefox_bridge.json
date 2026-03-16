@@ -1,0 +1,7 @@
+{
+  "name": "sol_firefox_bridge",
+  "description": "Sol macOS launcher - Firefox tab and history bridge",
+  "path": "/usr/local/bin/sol_firefox_bridge.js",
+  "type": "stdio",
+  "allowed_extensions": ["sol-firefox-bridge@sol.app"]
+}

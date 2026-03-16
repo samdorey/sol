@@ -94,6 +94,12 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 					<Favicon url={item.url} fallback={item.faviconFallback} />
 				)}
 
+				{(item.type === ItemType.FIREFOX_TAB ||
+					item.type === ItemType.FIREFOX_HISTORY) &&
+					!!item.url && (
+						<Favicon url={item.url} fallback={null} />
+					)}
+
 				{(Platform.OS === "macos" || Platform.OS === "ios") &&
 					!!item.IconComponent && <item.IconComponent />}
 				<Text
@@ -114,6 +120,24 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 						})}
 					>
 						Browser Bookmark
+					</Text>
+				)}
+				{item.type === ItemType.FIREFOX_TAB && (
+					<Text
+						className={clsx("darker-text text-xs", {
+							"text-white dark:text-neutral-200": isActive,
+						})}
+					>
+						Firefox Tab
+					</Text>
+				)}
+				{item.type === ItemType.FIREFOX_HISTORY && (
+					<Text
+						className={clsx("darker-text text-xs", {
+							"text-white dark:text-neutral-200": isActive,
+						})}
+					>
+						Firefox History
 					</Text>
 				)}
 				{item.type === ItemType.USER_SCRIPT && (

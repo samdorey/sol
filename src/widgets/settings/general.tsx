@@ -182,6 +182,19 @@ export const General = observer(() => {
         </View>
         <View className="border-t border-lightBorder dark:border-darkBorder" />
         <View className="flex-row items-center">
+          <View className="flex-1">
+            <Text>Show Firefox Tabs & History</Text>
+            <Text className="text-xxs text-neutral-500 dark:text-neutral-400">
+              Requires Firefox extension and native bridge
+            </Text>
+          </View>
+          <MySwitch
+            value={store.ui.firefoxEnabled}
+            onValueChange={store.ui.setFirefoxEnabled}
+          />
+        </View>
+        <View className="border-t border-lightBorder dark:border-darkBorder" />
+        <View className="flex-row items-center">
           <Text className="flex-1">Show upcoming event in Menu Bar</Text>
           <MySwitch
             value={store.ui.showUpcomingEvent}
