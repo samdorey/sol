@@ -6,16 +6,18 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BRIDGE_SCRIPT="$SCRIPT_DIR/sol_firefox_bridge.js"
-INSTALL_PATH="/usr/local/bin/sol_firefox_bridge.js"
+INSTALL_DIR="$HOME/.sol/bin"
+INSTALL_PATH="$INSTALL_DIR/sol_firefox_bridge.js"
 MANIFEST_DIR="$HOME/Library/Application Support/Mozilla/NativeMessagingHosts"
 MANIFEST_PATH="$MANIFEST_DIR/sol_firefox_bridge.json"
 
 echo "Installing Sol Firefox Bridge..."
 
-# 1. Copy bridge script to /usr/local/bin
+# 1. Copy bridge script to ~/.sol/bin (no sudo required)
+mkdir -p "$INSTALL_DIR"
 echo "  Copying bridge script to $INSTALL_PATH"
-sudo cp "$BRIDGE_SCRIPT" "$INSTALL_PATH"
-sudo chmod +x "$INSTALL_PATH"
+cp "$BRIDGE_SCRIPT" "$INSTALL_PATH"
+chmod +x "$INSTALL_PATH"
 
 # 2. Create native messaging host manifest
 echo "  Installing native messaging host manifest"
