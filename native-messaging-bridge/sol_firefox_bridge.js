@@ -13,6 +13,7 @@ const os = require("os");
 
 const DATA_DIR = path.join(os.homedir(), ".sol");
 const TABS_FILE = path.join(DATA_DIR, "firefox-tabs.json");
+const HISTORY_FILE = path.join(DATA_DIR, "firefox-history.json");
 const SOCKET_PATH = path.join(DATA_DIR, "firefox-bridge.sock");
 
 // Ensure data directory exists
@@ -67,7 +68,9 @@ function handleExtensionMessage(msg) {
       break;
 
     case "history_results":
-      // Forward history results to whichever Sol socket client requested them
+      // Write history results to file for Sol to read
+      writeHistory(msg.requestId, msg.results || []);
+      // Also forward via socket
       broadcastToSolClients({
         type: "history_results",
         requestId: msg.requestId,
@@ -80,6 +83,15 @@ function handleExtensionMessage(msg) {
 function writeTabs() {
   const data = JSON.stringify({ tabs: currentTabs, updatedAt: Date.now() });
   fs.writeFile(TABS_FILE, data, "utf-8", (err) => {
+    if (err) {
+      // Silently ignore write errors
+    }
+  });
+}
+
+function writeHistory(requestId, results) {
+  const data = JSON.stringify({ requestId, results, updatedAt: Date.now() });
+  fs.writeFile(HISTORY_FILE, data, "utf-8", (err) => {
     if (err) {
       // Silently ignore write errors
     }

@@ -130,47 +130,41 @@ export const createFirefoxStore = (root: IRootStore) => {
 
 			store.historyQuery = query;
 
-			// Send history request through bridge via bash
 			const requestId = nanoid();
-			const msg = JSON.stringify({
+
+			// Send history request via the bridge
+			store.sendBridgeCommand({
 				type: "history_request",
 				requestId,
 				query,
-				maxResults: 10,
+				maxResults: 50,
 			});
 
-			// Use the length-prefixed protocol over the socket
-			const script = `node -e "
-				const net = require('net');
-				const msg = '${msg.replace(/'/g, "\\'")}';
-				const buf = Buffer.alloc(4 + Buffer.byteLength(msg));
-				buf.writeUInt32LE(Buffer.byteLength(msg), 0);
-				buf.write(msg, 4);
-				const sock = net.connect('${SOCKET_PATH}');
-				sock.on('connect', () => { sock.write(buf); });
-				let respBuf = Buffer.alloc(0);
-				sock.on('data', (chunk) => {
-					respBuf = Buffer.concat([respBuf, chunk]);
-					if (respBuf.length >= 4) {
-						const len = respBuf.readUInt32LE(0);
-						if (respBuf.length >= 4 + len) {
-							process.stdout.write(respBuf.slice(4, 4 + len));
-							sock.end();
-						}
+			// Poll for results file — the bridge writes history results to disk
+			const username = solNative.userName();
+			const historyFile = `/Users/${username}/.sol/firefox-history.json`;
+			let attempts = 0;
+			const poll = setInterval(() => {
+				attempts++;
+				if (attempts > 10) {
+					clearInterval(poll);
+					return;
+				}
+				try {
+					if (!solNative.exists(historyFile)) return;
+					const content = solNative.readFile(historyFile);
+					if (!content) return;
+					const data = JSON.parse(content);
+					if (data.requestId === requestId) {
+						clearInterval(poll);
+						runInAction(() => {
+							store.historyResults = data.results || [];
+						});
 					}
-				});
-				sock.on('error', () => process.exit(0));
-				setTimeout(() => process.exit(0), 2000);
-			" 2>/dev/null || echo '{}'`;
-
-			solNative
-				.executeBashScript(script)
-				.then(() => {
-					// Results come back asynchronously; for now rely on file-based approach
-				})
-				.catch(() => {
-					// Bridge not available
-				});
+				} catch (e) {
+					// File not ready yet, keep polling
+				}
+			}, 200);
 		},
 
 		startPolling() {
