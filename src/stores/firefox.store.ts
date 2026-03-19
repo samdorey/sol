@@ -6,7 +6,7 @@ import { ItemType } from "./ui.store";
 import { nanoid } from "nanoid";
 
 const TABS_FILE_PATH = `${solNative.userName() ? `/Users/${solNative.userName()}` : "~"}/.sol/firefox-tabs.json`;
-const SOCKET_PATH = "/tmp/sol-firefox-bridge.sock";
+const SOCKET_PATH = `${solNative.userName() ? `/Users/${solNative.userName()}` : "~"}/.sol/firefox-bridge.sock`;
 
 export type FirefoxStore = ReturnType<typeof createFirefoxStore>;
 
@@ -84,11 +84,16 @@ export const createFirefoxStore = (root: IRootStore) => {
 		},
 
 		sendBridgeCommand(msg: object) {
-			// Write command to a file the bridge reads, or use executeBashScript
-			// to send via the Unix socket
+			// Write command to a temp file, then run a helper script to send it
 			const json = JSON.stringify(msg);
-			const script = `echo '${json.replace(/'/g, "'\\''")}' | nc -U -w1 "${SOCKET_PATH}" 2>/dev/null || true`;
-			solNative.executeBashScript(script).catch(() => {
+			const username = solNative.userName();
+			const cmdFile = `/Users/${username}/.sol/firefox-cmd.json`;
+			const helperScript = `/Users/${username}/.sol/bin/sol_firefox_send.sh`;
+
+			// Write the command JSON to a file, then execute the helper
+			solNative.executeBashScript(
+				`echo '${json.replace(/'/g, "'\\''")}' > "${cmdFile}" && /bin/bash "${helperScript}" "${cmdFile}" "${SOCKET_PATH}"`
+			).catch(() => {
 				// Bridge not available, ignore
 			});
 		},

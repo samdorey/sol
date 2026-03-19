@@ -13,7 +13,7 @@ const os = require("os");
 
 const DATA_DIR = path.join(os.homedir(), ".sol");
 const TABS_FILE = path.join(DATA_DIR, "firefox-tabs.json");
-const SOCKET_PATH = "/tmp/sol-firefox-bridge.sock";
+const SOCKET_PATH = path.join(DATA_DIR, "firefox-bridge.sock");
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -175,11 +175,20 @@ function handleSolMessage(msg) {
 
 // --- Cleanup ---
 
+// Track whether we successfully started the server
+let ownsSocket = false;
+server.on("listening", () => {
+  ownsSocket = true;
+});
+
 process.on("exit", () => {
-  try {
-    fs.unlinkSync(SOCKET_PATH);
-  } catch (e) {
-    // Ignore
+  // Only delete the socket if we created it — avoids race with new instances
+  if (ownsSocket) {
+    try {
+      fs.unlinkSync(SOCKET_PATH);
+    } catch (e) {
+      // Ignore
+    }
   }
 });
 
