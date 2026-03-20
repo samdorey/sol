@@ -153,7 +153,7 @@ export const ClipboardWidget: FC<Props> = observer(() => {
 				<Key symbol={"⇧"} />
 				<Key symbol={"⌫"} />
 				<View className="mx-2" />
-				<Text className={"text-xs mr-1"}>Paste</Text>
+				<Text className={"text-xs mr-1"}>Copy</Text>
 				<Key symbol={"⏎"} primary />
 			</View>
 		</View>

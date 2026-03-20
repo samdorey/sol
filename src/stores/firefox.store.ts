@@ -3,7 +3,6 @@ import { solNative } from "lib/SolNative";
 import { Linking } from "react-native";
 import type { IRootStore } from "store";
 import { ItemType } from "./ui.store";
-import { nanoid } from "nanoid";
 
 const TABS_FILE_PATH = `${solNative.userName() ? `/Users/${solNative.userName()}` : "~"}/.sol/firefox-tabs.json`;
 const SOCKET_PATH = `${solNative.userName() ? `/Users/${solNative.userName()}` : "~"}/.sol/firefox-bridge.sock`;
@@ -130,41 +129,35 @@ export const createFirefoxStore = (root: IRootStore) => {
 
 			store.historyQuery = query;
 
-			const requestId = nanoid();
-
-			// Send history request via the bridge
-			store.sendBridgeCommand({
-				type: "history_request",
-				requestId,
-				query,
-				maxResults: 50,
-			});
-
-			// Poll for results file — the bridge writes history results to disk
+			// Query Firefox's places.sqlite directly — much faster than the extension API
 			const username = solNative.userName();
+			const profilesDir = `/Users/${username}/Library/Application Support/Firefox/Profiles`;
 			const historyFile = `/Users/${username}/.sol/firefox-history.json`;
-			let attempts = 0;
-			const poll = setInterval(() => {
-				attempts++;
-				if (attempts > 10) {
-					clearInterval(poll);
-					return;
-				}
+			const escapedQuery = query.replace(/'/g, "''").replace(/"/g, '\\"');
+
+			const script = `/usr/bin/sqlite3 -json "$(ls -d '${profilesDir}'/*.default-release/places.sqlite 2>/dev/null | head -1)" "SELECT p.url, p.title, p.visit_count as visitCount, MAX(v.visit_date)/1000000 as lastVisitTime FROM moz_places p JOIN moz_historyvisits v ON v.place_id = p.id WHERE (p.title LIKE '%${escapedQuery}%' OR p.url LIKE '%${escapedQuery}%') AND p.visit_count > 0 GROUP BY p.url ORDER BY v.visit_date DESC LIMIT 30;" > "${historyFile}.tmp" 2>/dev/null && mv "${historyFile}.tmp" "${historyFile}" || echo '[]' > "${historyFile}"`;
+
+			solNative.executeBashScript(script).then(() => {
 				try {
 					if (!solNative.exists(historyFile)) return;
 					const content = solNative.readFile(historyFile);
 					if (!content) return;
-					const data = JSON.parse(content);
-					if (data.requestId === requestId) {
-						clearInterval(poll);
-						runInAction(() => {
-							store.historyResults = data.results || [];
-						});
-					}
+					const entries = JSON.parse(content);
+					runInAction(() => {
+						store.historyResults = (Array.isArray(entries) ? entries : []).map((e: any) => ({
+							id: e.url,
+							title: e.title || "",
+							url: e.url || "",
+							lastVisitTime: (e.lastVisitTime || 0) * 1000,
+							visitCount: e.visitCount || 0,
+						}));
+					});
 				} catch (e) {
-					// File not ready yet, keep polling
+					// Parse error, ignore
 				}
-			}, 200);
+			}).catch(() => {
+				// sqlite3 not available or profile not found
+			});
 		},
 
 		startPolling() {

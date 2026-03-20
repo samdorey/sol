@@ -71,7 +71,7 @@ export enum ScratchPadColor {
 }
 
 const minisearch = new MiniSearch({
-	fields: ["name", "localizedName", "alias", "type"],
+	fields: ["name", "localizedName", "alias", "type", "subName"],
 	storeFields: [
 		"name",
 		"localizedName",
@@ -387,6 +387,7 @@ export const createUIStore = (root: IRootStore) => {
 			const results: Item[] = minisearch.search(store.query, {
 				boost: {
 					name: 2,
+					subName: 0.5,
 				},
 				prefix: true,
 				fuzzy: true,
@@ -396,15 +397,25 @@ export const createUIStore = (root: IRootStore) => {
 					term: string,
 					storedFields?: Record<string, any>,
 				) => {
+					let boost = 1;
+
 					if (storedFields) {
+						// Boost by usage frequency
 						const freq = store.frequencies[storedFields.name] ?? 0;
-						if (freq === 0) {
-							return 1;
+						if (freq > 0 && maxFreq > 0) {
+							boost = 1 + freq / maxFreq;
 						}
-						return maxFreq > 0 ? 1 + freq / maxFreq : 1;
+
+						// Boost Firefox tabs above history, history above other results
+						const type = storedFields.type;
+						if (type === ItemType.FIREFOX_TAB) {
+							boost *= 3;
+						} else if (type === ItemType.FIREFOX_HISTORY) {
+							boost *= 1.5;
+						}
 					}
 
-					return 1;
+					return boost;
 				},
 			}) as any;
 

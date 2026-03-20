@@ -161,10 +161,11 @@ export const createKeystrokeStore = (root: IRootStore) => {
 									} catch (e) {
 										// console.log('could not open in browser')
 									}
-									solNative.hideWindow();
 								} else {
-									solNative.pasteToFrontmostApp(entry.text);
+									Clipboard.setString(entry.text);
+									solNative.showToast("Copied to clipboard", "success");
 								}
+								solNative.hideWindow();
 							}
 
 							break;
