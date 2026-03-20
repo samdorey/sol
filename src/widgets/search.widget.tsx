@@ -234,10 +234,11 @@ export const SearchWidget: FC = observer(() => {
 		if (focused && items.length && store.ui.selectedIndex < items.length) {
 			listRef.current?.scrollToIndex({
 				index: store.ui.selectedIndex,
-				viewOffset: 80,
+				animated: false,
+				viewPosition: 0.5,
 			});
 		}
-	}, [focused, store.ui.selectedIndex, items]);
+	}, [focused, store.ui.selectedIndex]);
 
 	return (
 		<View
