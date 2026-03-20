@@ -44,21 +44,24 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 		);
 	}
 
-	// Show section header when transitioning between result types
+	// Determine section label for this item
+	const sectionForType = (type: string) =>
+		type === ItemType.FIREFOX_TAB ? "Tabs" :
+		type === ItemType.FIREFOX_HISTORY ? "History" :
+		type === ItemType.BOOKMARK ? "Bookmarks" : "Apps";
+
 	const prevItem = index > 0 ? store.ui.items[index - 1] : null;
-	const showSectionHeader =
-		store.ui.query &&
-		index > 0 &&
-		prevItem &&
-		((item.type === ItemType.FIREFOX_HISTORY && prevItem.type === ItemType.FIREFOX_TAB) ||
-			(item.type !== ItemType.FIREFOX_TAB &&
-				item.type !== ItemType.FIREFOX_HISTORY &&
-				(prevItem.type === ItemType.FIREFOX_TAB || prevItem.type === ItemType.FIREFOX_HISTORY)));
+	const currentSection = sectionForType(item.type);
+	const prevSection = prevItem ? sectionForType(prevItem.type) : null;
+	const isFirstInSection = store.ui.query && (index === 0 || currentSection !== prevSection);
 
 	return (
 		<View>
-			{showSectionHeader && (
-				<View className="h-[1px] mx-3 my-1 bg-neutral-200 dark:bg-neutral-700" />
+			{isFirstInSection && (
+				<View className={clsx("mx-3 flex-row items-center", { "mt-2": index > 0 })}>
+					<Text className="text-xs darker-text font-medium py-1">{currentSection}</Text>
+					<View className="flex-1 ml-2 h-[1px] bg-neutral-200 dark:bg-neutral-700" />
+				</View>
 			)}
 			<TouchableOpacity
 				onPress={() => {
@@ -135,24 +138,6 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 						})}
 					>
 						Browser Bookmark
-					</Text>
-				)}
-				{item.type === ItemType.FIREFOX_TAB && (
-					<Text
-						className={clsx("darker-text text-xs", {
-							"text-white dark:text-neutral-200": isActive,
-						})}
-					>
-						Firefox Tab
-					</Text>
-				)}
-				{item.type === ItemType.FIREFOX_HISTORY && (
-					<Text
-						className={clsx("darker-text text-xs", {
-							"text-white dark:text-neutral-200": isActive,
-						})}
-					>
-						Firefox History
 					</Text>
 				)}
 				{item.type === ItemType.USER_SCRIPT && (
