@@ -301,11 +301,6 @@ export const createKeystrokeStore = (root: IRootStore) => {
 
 							root.ui.addToHistory(root.ui.query);
 
-							if (shift) {
-								root.ui.translateQuery();
-								return;
-							}
-
 							// If there are no items, or if the query is a meta (⌘ is pressed) query, open a google search
 							if (!root.ui.items.length || meta) {
 								switch (root.ui.searchEngine) {
