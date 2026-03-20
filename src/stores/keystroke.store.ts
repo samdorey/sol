@@ -414,6 +414,23 @@ export const createKeystrokeStore = (root: IRootStore) => {
 								return;
 							}
 
+							// Firefox items: callbacks are lost through MiniSearch,
+							// so handle them explicitly
+							if (item.type === ItemType.FIREFOX_TAB && root.firefox) {
+								const tab = root.firefox.tabs.find(
+									(t: any) => `firefox_tab_${t.id}` === item.id,
+								);
+								if (tab) {
+									root.firefox.activateTab(tab.id, tab.windowId);
+									return;
+								}
+							}
+
+							if (item.type === ItemType.FIREFOX_HISTORY && item.url) {
+								Linking.openURL(item.url);
+								return;
+							}
+
 							if (item.url) {
 								solNative.openFile(item.url);
 								return;
@@ -670,21 +687,33 @@ export const createKeystrokeStore = (root: IRootStore) => {
 							break;
 
 						default:
-							if (
-								root.ui.focusedWidget === Widget.SEARCH &&
-								root.ui.selectedIndex === 0 &&
-								root.ui.history.length > 0
-							) {
-								root.ui.setQuery(
-									root.ui.history[
-										root.ui.history.length - 1 - root.ui.historyPointer
-									],
-								);
+							if (root.ui.focusedWidget === Widget.SEARCH) {
+								if (
+									root.ui.selectedIndex === 0 &&
+									root.ui.history.length > 0
+								) {
+									root.ui.setQuery(
+										root.ui.history[
+											root.ui.history.length - 1 - root.ui.historyPointer
+										],
+									);
 
-								root.ui.setHistoryPointer(
-									Math.min(root.ui.history.length, root.ui.historyPointer + 1),
-								);
-								return;
+									root.ui.setHistoryPointer(
+										Math.min(root.ui.history.length, root.ui.historyPointer + 1),
+									);
+									return;
+								}
+
+								if (store.commandPressed && root.ui.sectionBoundaries.length > 0) {
+									// Cmd+Up: jump to previous section
+									const prev = [...root.ui.sectionBoundaries]
+										.reverse()
+										.find((b: number) => b < root.ui.selectedIndex);
+									root.ui.selectedIndex = prev !== undefined ? prev : 0;
+								} else {
+									root.ui.selectedIndex = Math.max(0, root.ui.selectedIndex - 1);
+								}
+								break;
 							}
 
 							root.ui.selectedIndex = Math.max(0, root.ui.selectedIndex - 1);
@@ -734,10 +763,20 @@ export const createKeystrokeStore = (root: IRootStore) => {
 						}
 
 						case Widget.SEARCH: {
-							root.ui.selectedIndex = Math.min(
-								root.ui.items.length - 1,
-								root.ui.selectedIndex + 1,
-							);
+							if (store.commandPressed && root.ui.sectionBoundaries.length > 0) {
+								// Cmd+Down: jump to next section
+								const next = root.ui.sectionBoundaries.find(
+									(b: number) => b > root.ui.selectedIndex,
+								);
+								if (next !== undefined) {
+									root.ui.selectedIndex = next;
+								}
+							} else {
+								root.ui.selectedIndex = Math.min(
+									root.ui.items.length - 1,
+									root.ui.selectedIndex + 1,
+								);
+							}
 							break;
 						}
 

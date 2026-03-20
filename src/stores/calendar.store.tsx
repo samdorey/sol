@@ -1,4 +1,4 @@
-import { captureException } from "@sentry/react-native";
+
 import { extractMeetingLink } from "lib/calendar";
 import { solNative } from "lib/SolNative";
 import { DateTime } from "luxon";
@@ -135,7 +135,6 @@ export const createCalendarStore = (root: IRootStore) => {
 					store.events = events;
 				});
 			} catch (error) {
-				captureException(error);
 				console.error("Failed to fetch calendar events:", error);
 			}
 		},

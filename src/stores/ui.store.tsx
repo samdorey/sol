@@ -22,7 +22,6 @@ import {
 import type { IRootStore } from "store";
 import { createBaseItems } from "./items";
 import MiniSearch from "minisearch";
-import * as Sentry from "@sentry/react-native";
 import { storage } from "./storage";
 import { defaultShortcuts } from "lib/shortcuts";
 
@@ -159,7 +158,7 @@ export const createUIStore = (root: IRootStore) => {
 		try {
 			storage.set("@ui.store", JSON.stringify(plainState));
 		} catch (e) {
-			Sentry.captureException(e);
+			console.error("Failed to persist UI store:", e);
 		}
 	};
 
@@ -215,7 +214,7 @@ export const createUIStore = (root: IRootStore) => {
 				}
 				store.globalShortcut = parsedStore.globalShortcut;
 				store.showWindowOn = parsedStore.showWindowOn ?? "screenWithFrontmost";
-				store.calendarEnabled = parsedStore.calendarEnabled ?? true;
+				store.calendarEnabled = false;
 				store.showAllDayEvents = parsedStore.showAllDayEvents ?? true;
 				store.launchAtLogin = parsedStore.launchAtLogin ?? true;
 				store.mediaKeyForwardingEnabled =
@@ -281,6 +280,7 @@ export const createUIStore = (root: IRootStore) => {
 			| "screenWithCursor",
 		query: "",
 		selectedIndex: 0,
+		maxResultsPerSection: 5,
 		focusedWidget: Widget.SEARCH,
 		events: [] as INativeEvent[],
 		customItems: [] as Item[],
@@ -295,7 +295,7 @@ export const createUIStore = (root: IRootStore) => {
 		secondTranslationLanguage: "de" as string,
 		thirdTranslationLanguage: null as null | string,
 		fileResults: [] as FileDescription[],
-		calendarEnabled: true,
+		calendarEnabled: false,
 		showAllDayEvents: true,
 		launchAtLogin: true,
 		hasFullDiskAccess: false,
@@ -423,7 +423,13 @@ export const createUIStore = (root: IRootStore) => {
 				? [{ id: "temporary", type: ItemType.TEMPORARY_RESULT, name: "" }]
 				: [];
 
-			const finalResults: Item[] = [
+			// Group results into sections with configurable limits
+			const maxPerSection = store.maxResultsPerSection;
+			const firefoxTabs = results.filter((r: any) => r.type === ItemType.FIREFOX_TAB).slice(0, maxPerSection);
+			const firefoxHistory = results.filter((r: any) => r.type === ItemType.FIREFOX_HISTORY).slice(0, maxPerSection);
+			const rest = results.filter((r: any) => r.type !== ItemType.FIREFOX_TAB && r.type !== ItemType.FIREFOX_HISTORY).slice(0, maxPerSection);
+
+			const preamble: Item[] = [
 				...(CONSTANTS.LESS_VALID_URL.test(store.query)
 					? [
 							{
@@ -442,10 +448,35 @@ export const createUIStore = (root: IRootStore) => {
 						]
 					: []),
 				...temporaryResultItems,
-				...results,
+			];
+
+			const finalResults: Item[] = [
+				...preamble,
+				...firefoxTabs,
+				...firefoxHistory,
+				...rest,
 			];
 
 			return finalResults;
+		},
+		get sectionBoundaries(): number[] {
+			const items = store.items;
+			const boundaries: number[] = [];
+			let lastType: string | null = null;
+			for (let i = 0; i < items.length; i++) {
+				const t = items[i].type;
+				const section =
+					t === ItemType.FIREFOX_TAB ? "tab" :
+					t === ItemType.FIREFOX_HISTORY ? "history" : "other";
+				if (section !== lastType && lastType !== null) {
+					boundaries.push(i);
+				}
+				if (lastType === null) {
+					boundaries.push(i);
+				}
+				lastType = section;
+			}
+			return boundaries;
 		},
 		get currentItem(): Item | undefined {
 			return store.items[store.selectedIndex];

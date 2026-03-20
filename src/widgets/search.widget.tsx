@@ -44,15 +44,30 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 		);
 	}
 
+	// Show section header when transitioning between result types
+	const prevItem = index > 0 ? store.ui.items[index - 1] : null;
+	const showSectionHeader =
+		store.ui.query &&
+		index > 0 &&
+		prevItem &&
+		((item.type === ItemType.FIREFOX_HISTORY && prevItem.type === ItemType.FIREFOX_TAB) ||
+			(item.type !== ItemType.FIREFOX_TAB &&
+				item.type !== ItemType.FIREFOX_HISTORY &&
+				(prevItem.type === ItemType.FIREFOX_TAB || prevItem.type === ItemType.FIREFOX_HISTORY)));
+
 	return (
-		<TouchableOpacity
-			onPress={() => {
-				store.ui.setSelectedIndex(index);
-				store.keystroke.simulateEnter();
-			}}
-		>
-			<View
-				className={clsx("flex-1 flex-row items-center px-3 h-12 rounded-xl", {
+		<View>
+			{showSectionHeader && (
+				<View className="h-[1px] mx-3 my-1 bg-neutral-200 dark:bg-neutral-700" />
+			)}
+			<TouchableOpacity
+				onPress={() => {
+					store.ui.setSelectedIndex(index);
+					store.keystroke.simulateEnter();
+				}}
+			>
+				<View
+					className={clsx("flex-1 flex-row items-center px-3 h-12 rounded-xl", {
 					"bg-accent": isActive,
 				})}
 			>
@@ -193,6 +208,7 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 				)}
 			</View>
 		</TouchableOpacity>
+		</View>
 	);
 });
 
