@@ -58,28 +58,31 @@ https://discord.gg/W9XmqCQCKP
 - Script Runner
 - Symbolic Link Support
 
-## Contributing
+## Development
 
-You need to set up your machine for macOS development with React Native. Basically you need to install:
+### Prerequisites
 
-- Mise (https://mise.jdx.dev/)
-- Xcode
-- Cocoapods
+- **Xcode** (from the App Store — accept the license with `sudo xcodebuild -license accept` and run `sudo xcodebuild -runFirstLaunch`)
+- **Bun** (`brew install oven-sh/bun/bun`)
+- **CocoaPods** (`brew install cocoapods`)
+- **Node.js** (`brew install node`) — needed for the Firefox bridge
 
-Follow any of the online tutorials to set up your machine for iOS/MacOS React Native development.
-
-Once you have everything installed run the following commands
+### Setup
 
 ```sh
-mise plugin add cocoapods
-# To enable hooks
-mise settings experimental=true
-# Will install all bun, ruby and run the installation of dependencies
-mise install
+# Install JS dependencies
+bun install
 
-# You can then run the app with
-bun macos
+# Install native dependencies
+cd macos && pod install && cd ..
+
+# Run the app in debug mode
+bun run macos
 ```
+
+### Firefox Integration
+
+To enable Firefox tab and history search, see [FIREFOX_SETUP.md](FIREFOX_SETUP.md).
 
 ## License
 
