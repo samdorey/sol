@@ -69,8 +69,15 @@ export const createFirefoxStore = (root: IRootStore) => {
 		activateTab(tabId: number, windowId: number) {
 			// Use AppleScript to bring Firefox to front, then use the socket
 			// to tell the extension to activate the specific tab
+			// Activate whichever Firefox variant is running
 			solNative.executeAppleScript(
-				`tell application "Firefox" to activate`,
+				`try
+					tell application "Firefox Developer Edition" to activate
+				on error
+					try
+						tell application "Firefox" to activate
+					end try
+				end try`,
 			);
 
 			// Also send activate_tab via the bridge socket
