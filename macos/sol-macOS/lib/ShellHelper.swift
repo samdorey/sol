@@ -2,6 +2,22 @@ import Cocoa
 import Foundation
 
 struct ShellHelper {
+  static func shSilent(_ command: String) -> String {
+    let task = Process()
+    let pipe = Pipe()
+
+    task.standardOutput = pipe
+    task.standardError = pipe
+    task.arguments = ["-l", "-c", command]
+    task.launchPath = "/bin/zsh"
+    task.standardInput = nil
+    task.launch()
+    task.waitUntilExit()
+
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    return String(data: data, encoding: .utf8) ?? ""
+  }
+
   static func shWithFloatingPanel(_ command: String) {
     let task = Process()
     let pipe = Pipe()

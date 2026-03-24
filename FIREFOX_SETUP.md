@@ -45,14 +45,16 @@ This will:
 
 **For permanent installation:**
 
-Package the extension as an `.xpi` file:
+Requires Firefox Developer Edition, ESR, or Nightly (regular Firefox does not allow unsigned extensions).
 
-```bash
-cd firefox-extension
-zip -r sol-firefox-bridge.xpi manifest.json background.js
-```
-
-Then install the `.xpi` file in Firefox via `about:addons`.
+1. In Firefox, go to `about:config` and set `xpis.signatures.required` to `false`
+2. Package the extension:
+   ```bash
+   cd firefox-extension
+   zip -r sol-firefox-bridge.xpi manifest.json background.js
+   ```
+3. Go to `about:addons`, click the gear icon → "Install Add-on From File..."
+4. Select the `.xpi` file
 
 ### 3. Enable in Sol
 

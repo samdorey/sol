@@ -1,62 +1,13 @@
 # Sol
 
-![Header](Header.jpg)
+Sol is an open source app launcher, focused on ease of use and speed. It has minimal configuration and runs natively. 
 
-<br/>
-<div align="center">
-  <a align="center" href="https://twitter.com/ospfranco">
-    <img src="https://img.shields.io/twitter/follow/ospfranco?label=Follow%20%40ospfranco&style=social" />
-  </a>
-</div>
+This is a fork by samdorey, that uses sol as a base but adds/removes some features. [Official site for sol](https://sol.ospfranco.com)
 
-Sol is an open source app launcher, focused on ease of use and speed. It has minimal configuration and runs natively.
-
-[Visit official site](https://sol.ospfranco.com)
-
-## Download
-
-Install via brew
-
-```
-brew install --cask sol
-```
-
-Or manually download the latest [release](https://github.com/ospfranco/sol/tree/main/releases).
-
-## Discord
-
-Join the Discord
-
-https://discord.gg/W9XmqCQCKP
-
-## Features
-
-- App search
-- Custom shortcuts
-- Google translate
-- Calendar
-- Show upcoming appointement in Menu Bar
-- Custom AppleScript commands
-- Custom links
-- Imports browser bookmarks
-- Window Manager
-- Emoji picker
-- Clipboard manager
-- Notes Scratchpad
-- Retrieve Wi-Fi password
-- Show IP address
-- Start a google meet
-- Switch OS theme
-- Process killer
-- Generate NanoID
-- Generate UUID
-- Generate lorem ipsum
-- Format and paste JSON
-- Forward media keys to Spotify/Apple Music
-- Blacken Menu Bar
-- Quickly evaluate math operations
-- Script Runner
-- Symbolic Link Support
+Fork features:
+- Disabled translation
+- Removed Mise as a toolchain manager
+- Added firefox tab and history search
 
 ## Development
 

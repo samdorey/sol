@@ -3,14 +3,9 @@
 	"version": "2.1.299",
 	"private": true,
 	"scripts": {
-		"start": "react-native start",
-		"macos": "react-native run-macos --scheme debug",
-		"bump": "./scripts/bump-version.sh",
-		"permissions:reset": "tccutil reset Calendar com.ospfranco.sol && tccutil reset Accessibility com.ospfranco.sol",
-		"dev": "bundle exec fastlane dev && rimraf releases/Sol.app && open /Applications/Sol.app",
-		"release": "bundle exec fastlane release",
-		"fix-dependencies": "rnx-align-deps --write",
-		"pods": "cd macos && rm -rf Podfile.lock && bundle exec pod install && rm .xcode.env.local && xcodebuild -resolvePackageDependencies -workspace sol.xcworkspace -scheme debug",
+		"build": "SENTRY_DISABLE_AUTO_UPLOAD=true xcodebuild -workspace macos/sol.xcworkspace -scheme debug -configuration Release build -quiet && echo 'Build complete'",
+		"install-app": "bun run build && killall sol-debug 2>/dev/null; killall sol 2>/dev/null; sleep 1; rm -rf /Applications/Sol.app && cp -R \"$(find ~/Library/Developer/Xcode/DerivedData/sol-*/Build/Products/Release -name '*.app' -maxdepth 1 | head -1)\" /Applications/Sol.app && open /Applications/Sol.app",
+		"pods": "cd macos && pod install",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
