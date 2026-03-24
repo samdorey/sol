@@ -130,9 +130,30 @@ const RenderItem = observer(({ item, index }: any) => {
 })
 
 
+const SECTION_FILTERS = [
+  { label: 'All', value: 'all' },
+  { label: 'Apps', value: 'apps' },
+  { label: 'Bookmarks', value: 'bookmarks' },
+  { label: 'Custom', value: 'custom' },
+  { label: 'Scripts', value: 'scripts' },
+] as const
+
+function itemMatchesSection(item: Item, section: string): boolean {
+  switch (section) {
+    case 'apps': return !item.type || item.type === ItemType.APPLICATION
+    case 'firefox_tabs': return item.type === ItemType.FIREFOX_TAB
+    case 'firefox_history': return item.type === ItemType.FIREFOX_HISTORY
+    case 'bookmarks': return item.type === ItemType.BOOKMARK
+    case 'custom': return item.type === ItemType.CUSTOM
+    case 'scripts': return item.type === ItemType.USER_SCRIPT
+    default: return true
+  }
+}
+
 export const Items = observer(() => {
   const store = useStore()
   const [query, setQuery] = useState('')
+  const [sectionFilter, setSectionFilter] = useState('all')
   const shortcutSearchFilter = store.ui.shortcutSearchFilter
 
   // Clear query on unmount
@@ -149,9 +170,16 @@ export const Items = observer(() => {
     store.ui.setQuery(text)
   }
 
-  // Filter items based on shortcut search filter
+  // Filter items — exclude Firefox items entirely, then apply section/shortcut filters
   const filteredItems = useMemo(() => {
-    let items = store.ui.items
+    let items = store.ui.items.filter(item =>
+      item.type !== ItemType.FIREFOX_TAB && item.type !== ItemType.FIREFOX_HISTORY
+    )
+
+    // Filter by section
+    if (sectionFilter !== 'all') {
+      items = items.filter(item => itemMatchesSection(item, sectionFilter))
+    }
 
     // If there's a shortcut filter, filter items by shortcut
     if (shortcutSearchFilter) {
@@ -162,7 +190,7 @@ export const Items = observer(() => {
     }
 
     return items
-  }, [store.ui.items, shortcutSearchFilter, store.ui.shortcuts])
+  }, [store.ui.items, sectionFilter, shortcutSearchFilter, store.ui.shortcuts])
 
   return (
     <View className="flex-1 h-full p-4">
@@ -206,6 +234,25 @@ export const Items = observer(() => {
             <Text className="text-base">⌨</Text>
           </TouchableOpacity>
         </View>
+        <View className="flex-row items-center gap-1 ml-2 mt-2 flex-wrap">
+          {SECTION_FILTERS.map(f => (
+            <TouchableOpacity
+              key={f.value}
+              onPress={() => setSectionFilter(f.value)}
+              className={clsx(
+                'px-2 py-1 rounded border',
+                {
+                  'border-accent bg-accent/10': sectionFilter === f.value,
+                  'border-lightBorder dark:border-darkBorder': sectionFilter !== f.value,
+                }
+              )}
+            >
+              <Text className={clsx('text-xs', {
+                'text-accent': sectionFilter === f.value,
+              })}>{f.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         {shortcutSearchFilter && (
           <View className="flex-row items-center gap-2 ml-2 mt-2 p-2 bg-accent/10 rounded">
             <Text className="text-sm">Filtering by shortcut:</Text>
@@ -230,7 +277,6 @@ export const Items = observer(() => {
           data={filteredItems}
           keyExtractor={item => item.id}
           renderItem={RenderItem}
-          recycleItems
         />
       </View>
     </View>

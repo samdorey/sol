@@ -20,6 +20,11 @@ import {
 import { useStore } from "store";
 import { ItemType, Widget } from "stores/ui.store";
 
+const sectionForType = (type: string) =>
+	type === ItemType.FIREFOX_TAB ? "Tabs" :
+	type === ItemType.FIREFOX_HISTORY ? "History" :
+	type === ItemType.BOOKMARK ? "Bookmarks" : "Apps";
+
 const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 	const store = useStore();
 	const isActive = index === store.ui.selectedIndex;
@@ -44,26 +49,13 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 		);
 	}
 
-	// Determine section label for this item
-	const sectionForType = (type: string) =>
-		type === ItemType.FIREFOX_TAB ? "Tabs" :
-		type === ItemType.FIREFOX_HISTORY ? "History" :
-		type === ItemType.BOOKMARK ? "Bookmarks" : "Apps";
-
 	const prevItem = index > 0 ? store.ui.items[index - 1] : null;
 	const currentSection = sectionForType(item.type);
 	const prevSection = prevItem ? sectionForType(prevItem.type) : null;
 	const isFirstInSection = store.ui.query && (index === 0 || currentSection !== prevSection);
 
 	return (
-		<View>
-			{isFirstInSection && (
-				<View className={clsx("mx-3 flex-row items-center", { "mt-2": index > 0 })}>
-					<Text className="text-xs darker-text font-medium py-1">{currentSection}</Text>
-					<View className="flex-1 ml-2 h-[1px] bg-neutral-200 dark:bg-neutral-700" />
-				</View>
-			)}
-			<TouchableOpacity
+		<TouchableOpacity
 				onPress={() => {
 					store.ui.setSelectedIndex(index);
 					store.keystroke.simulateEnter();
@@ -193,7 +185,6 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 				)}
 			</View>
 		</TouchableOpacity>
-		</View>
 	);
 });
 
@@ -247,7 +238,6 @@ export const SearchWidget: FC = observer(() => {
 						renderItem={ItemRow}
 						showsVerticalScrollIndicator={false}
 						ListEmptyComponent={EmptyComponent}
-						recycleItems
 						maintainVisibleContentPosition={false}
 					/>
 

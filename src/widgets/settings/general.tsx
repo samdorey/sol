@@ -183,14 +183,27 @@ export const General = observer(() => {
         <View className="border-t border-lightBorder dark:border-darkBorder" />
         <View className="flex-row items-center">
           <View className="flex-1">
-            <Text>Show Firefox Tabs & History</Text>
+            <Text>Show Firefox Tabs</Text>
             <Text className="text-xxs text-neutral-500 dark:text-neutral-400">
               Requires Firefox extension and native bridge
             </Text>
           </View>
           <MySwitch
-            value={store.ui.firefoxEnabled}
-            onValueChange={store.ui.setFirefoxEnabled}
+            value={store.ui.firefoxTabsEnabled}
+            onValueChange={store.ui.setFirefoxTabsEnabled}
+          />
+        </View>
+        <View className="border-t border-lightBorder dark:border-darkBorder" />
+        <View className="flex-row items-center">
+          <View className="flex-1">
+            <Text>Show Firefox History</Text>
+            <Text className="text-xxs text-neutral-500 dark:text-neutral-400">
+              Searches Firefox browsing history via local database
+            </Text>
+          </View>
+          <MySwitch
+            value={store.ui.firefoxHistoryEnabled}
+            onValueChange={store.ui.setFirefoxHistoryEnabled}
           />
         </View>
         <View className="border-t border-lightBorder dark:border-darkBorder" />

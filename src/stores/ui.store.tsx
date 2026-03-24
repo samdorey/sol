@@ -70,7 +70,7 @@ export enum ScratchPadColor {
 }
 
 const minisearch = new MiniSearch({
-	fields: ["name", "localizedName", "alias", "type", "subName"],
+	fields: ["name", "localizedName", "alias", "type"],
 	storeFields: [
 		"name",
 		"localizedName",
@@ -234,6 +234,8 @@ export const createUIStore = (root: IRootStore) => {
 					parsedStore.hasDismissedGettingStarted ?? false;
 				store.hyperKeyEnabled = parsedStore.hyperKeyEnabled ?? false;
 				store.firefoxEnabled = parsedStore.firefoxEnabled ?? true;
+				store.firefoxTabsEnabled = parsedStore.firefoxTabsEnabled ?? true;
+				store.firefoxHistoryEnabled = parsedStore.firefoxHistoryEnabled ?? true;
 				store.disabledItemIds = parsedStore.disabledItemIds ?? [];
 			});
 
@@ -322,6 +324,8 @@ export const createUIStore = (root: IRootStore) => {
 		confirmTitle: null as string | null,
 		hyperKeyEnabled: false,
 		firefoxEnabled: true,
+		firefoxTabsEnabled: true,
+		firefoxHistoryEnabled: true,
 		//    _____                            _           _
 		//   / ____|                          | |         | |
 		//  | |     ___  _ __ ___  _ __  _   _| |_ ___  __| |
@@ -361,8 +365,8 @@ export const createUIStore = (root: IRootStore) => {
 				...store.customItems,
 				...root.scripts.scripts,
 				...(store.showInAppBrowserBookMarks ? store.bookmarks : []),
-				...(store.firefoxEnabled && root.firefox ? root.firefox.tabItems : []),
-				...(store.firefoxEnabled && root.firefox ? root.firefox.historyItems : []),
+				...(store.firefoxEnabled && store.firefoxTabsEnabled && root.firefox ? root.firefox.tabItems : []),
+				...(store.firefoxEnabled && store.firefoxHistoryEnabled && root.firefox ? root.firefox.historyItems : []),
 			];
 
 			// If the query is empty, return all items
@@ -387,7 +391,6 @@ export const createUIStore = (root: IRootStore) => {
 			const results: Item[] = minisearch.search(store.query, {
 				boost: {
 					name: 2,
-					subName: 0.5,
 				},
 				prefix: true,
 				fuzzy: true,
@@ -647,7 +650,7 @@ export const createUIStore = (root: IRootStore) => {
 				}
 
 				// Request Firefox history search when query is long enough
-				if (store.firefoxEnabled && root.firefox && store.query.length >= 2) {
+				if (store.firefoxEnabled && store.firefoxHistoryEnabled && root.firefox && store.query.length >= 2) {
 					root.firefox.requestHistory(store.query);
 				}
 			}
@@ -1050,6 +1053,14 @@ export const createUIStore = (root: IRootStore) => {
 
 		setFirefoxEnabled: (v: boolean) => {
 			store.firefoxEnabled = v;
+		},
+
+		setFirefoxTabsEnabled: (v: boolean) => {
+			store.firefoxTabsEnabled = v;
+		},
+
+		setFirefoxHistoryEnabled: (v: boolean) => {
+			store.firefoxHistoryEnabled = v;
 		},
 
 		// Old custom items are not migrated to the new format which has an id
