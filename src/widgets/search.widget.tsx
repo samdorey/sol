@@ -1,4 +1,3 @@
-import { LegendList, type LegendListRef } from "@legendapp/list";
 import { Icons } from "assets";
 import clsx from "clsx";
 import Favicon from "components/Favicon";
@@ -8,10 +7,11 @@ import { LoadingBar } from "components/LoadingBar";
 import { MainInput } from "components/MainInput";
 import { renderToKeys } from "lib/shortcuts";
 import { observer } from "mobx-react-lite";
-import { type FC, useEffect, useRef } from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 import {
 	Image,
 	Platform,
+	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -48,11 +48,6 @@ const ItemRow = observer(({ item, index }: { item: Item; index: number }) => {
 			</View>
 		);
 	}
-
-	const prevItem = index > 0 ? store.ui.items[index - 1] : null;
-	const currentSection = sectionForType(item.type);
-	const prevSection = prevItem ? sectionForType(prevItem.type) : null;
-	const isFirstInSection = store.ui.query && (index === 0 || currentSection !== prevSection);
 
 	return (
 		<TouchableOpacity
@@ -201,18 +196,25 @@ const EmptyComponent = () => {
 export const SearchWidget: FC = observer(() => {
 	const store = useStore();
 	const focused = store.ui.focusedWidget === Widget.SEARCH;
-	const listRef = useRef<LegendListRef | null>(null);
+	const scrollRef = useRef<ScrollView | null>(null);
+	const rowRefs = useRef<Record<number, View | null>>({});
 	const items = store.ui.items.filter(
 		(item) => !store.ui.isItemDisabled(item.id),
 	);
 
+
 	useEffect(() => {
 		if (focused && items.length && store.ui.selectedIndex < items.length) {
-			listRef.current?.scrollToIndex({
-				index: store.ui.selectedIndex,
-				animated: false,
-				viewPosition: 0.5,
-			});
+			const row = rowRefs.current[store.ui.selectedIndex];
+			if (row && scrollRef.current) {
+				row.measureLayout(
+					scrollRef.current as any,
+					(_x, y) => {
+						scrollRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: false });
+					},
+					() => {},
+				);
+			}
 		}
 	}, [focused, store.ui.selectedIndex]);
 
@@ -229,17 +231,32 @@ export const SearchWidget: FC = observer(() => {
 			{!!store.ui.query && (
 				<>
 					<LoadingBar />
-					<LegendList
+					<ScrollView
+						key={items.map(i => i.id).join(',')}
 						style={STYLES.list}
 						contentContainerStyle={STYLES.contentContainer}
-						ref={listRef}
-						data={items}
-						keyExtractor={(item) => item.id}
-						renderItem={ItemRow}
+						ref={scrollRef}
 						showsVerticalScrollIndicator={false}
-						ListEmptyComponent={EmptyComponent}
-						maintainVisibleContentPosition={false}
-					/>
+					>
+						{items.length === 0 && <EmptyComponent />}
+						{items.map((item, index) => {
+							const prevItem = index > 0 ? items[index - 1] : null;
+							const currentSection = sectionForType(item.type);
+							const prevSection = prevItem ? sectionForType(prevItem.type) : null;
+							const showHeader = index === 0 || currentSection !== prevSection;
+							return (
+								<View key={item.id} ref={(r) => { rowRefs.current[index] = r; }}>
+									{showHeader && (
+										<View className={clsx("mx-3 flex-row items-center", { "mt-2": index > 0 })}>
+											<Text className="text-xs darker-text font-medium py-1">{currentSection}</Text>
+											<View className="flex-1 ml-2 h-[1px] bg-neutral-200 dark:bg-neutral-700" />
+										</View>
+									)}
+									<ItemRow item={item} index={index} />
+								</View>
+							);
+						})}
+					</ScrollView>
 
 					<View className="py-2 px-4 flex-row items-center justify-end gap-1 subBg border-t border-color">
 						{store.ui.currentItem?.type === ItemType.CUSTOM && (
