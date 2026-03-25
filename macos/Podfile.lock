@@ -1814,32 +1814,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (7.2.0):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.56.1)
-    - Yoga
-  - Sentry/HybridSDK (8.56.1)
   - SocketRocket (0.7.1)
   - Sparkle (2.8.1)
   - Yoga (0.0.0)
@@ -1922,7 +1896,6 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native-macos/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
-  - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - SocketRocket (from `../node_modules/react-native-macos/third-party-podspecs/SocketRocket.podspec`)
   - Sparkle
   - Yoga (from `../node_modules/react-native-macos/ReactCommon/yoga`)
@@ -1932,7 +1905,6 @@ SPEC REPOS:
     - HotKey
     - MMKV
     - MMKVCore
-    - Sentry
     - Sparkle
 
 EXTERNAL SOURCES:
@@ -2085,8 +2057,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
-  RNSentry:
-    :path: "../node_modules/@sentry/react-native"
   SocketRocket:
     :podspec: "../node_modules/react-native-macos/third-party-podspecs/SocketRocket.podspec"
   Yoga:
@@ -2170,8 +2140,6 @@ SPEC CHECKSUMS:
   ReactCommon: 221a2a59d77cfa50a8ffa86d7153c360541e24ad
   RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
   RNReanimated: 2a551d22723d2b5d08e786b0c457766ec9e9a00f
-  RNSentry: eeaaa1a61ce59874fb46bba120042464618723e6
-  Sentry: b3ec44d01708fce73f99b544beb57e890eca4406
   SocketRocket: 03f7111df1a343b162bf5b06ead333be808e1e0a
   Sparkle: a346a4341537c625955751ed3ae4b340b68551fa
   Yoga: be08366e61155f388be00b3943f4b3febdef8d30
